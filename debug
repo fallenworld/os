@@ -1,0 +1,4 @@
+nasm boot.s
+dd if=boot of=boot.img bs=512 count=1 conv=notrunc
+bochs
+
