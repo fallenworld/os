@@ -1,4 +1,7 @@
-nasm boot.s
+nasm boot.asm
+nasm LOADER.asm
 dd if=boot of=boot.img bs=512 count=1 conv=notrunc
+sudo mount boot.img /mnt/floppy/
+sudo cp LOADER /mnt/floppy/
+sudo umount /mnt/floppy/
 bochs
-
