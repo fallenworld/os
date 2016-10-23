@@ -79,10 +79,10 @@ FAT12_INIT:
 	mov ax, FAT12_DATA_SECTION
 	mov ds, ax
 	pop ax
-    ;复位软盘
-    mov ah, 0
-    mov dl, al
-    int 13h
+	;复位软盘
+	mov ah, 0
+	mov dl, al
+	int 13h
 	;读取FAT12第一个扇区
 	mov dl, al
 	mov dh, 0
@@ -120,20 +120,20 @@ FAT12_INIT:
 	mov ax, [FAT12_INFO+FAT12Info_RootSectionCount]
 	mul word [BPB_BytsPerSec]
 	mov [FAT12_INFO+FAT12Info_RootSize], ax
-    ;加载fat表
-    push ax	;暂存ax
-    push bx	;暂存bx
-    mov bx, FAT12_TABLE
-    mov ah, FAT12_TABLE_SECTION_CNT
-    mov al, FAT12_TABLE_START_SECTION
-    call FAT12_READ_SECTION
-    pop bx	;恢复ax
-    pop ax	;恢复bx
+	;加载fat表
+	push ax	;暂存ax
+	push bx	;暂存bx
+	mov bx, FAT12_TABLE
+	mov ah, FAT12_TABLE_SECTION_CNT
+	mov al, FAT12_TABLE_START_SECTION
+	call FAT12_READ_SECTION
+	pop bx	;恢复ax
+	pop ax	;恢复bx
 	;加载根目录区
-    mov bx, FAT12_ROOT
-    mov ah, [FAT12_INFO+FAT12Info_RootSectionCount]
+	mov bx, FAT12_ROOT
+	mov ah, [FAT12_INFO+FAT12Info_RootSectionCount]
 	mov al, FAT12_ROOT_START_SECTION
-    call FAT12_READ_SECTION
+	call FAT12_READ_SECTION
 	add sp, FAT12_SECTION_SIZE
 	pop es
 	pop ds
@@ -155,6 +155,7 @@ FAT12_READ_SECTION:
 	push cx
 	push dx
 	push di
+	push ds
 	push ax
 	mov ax, FAT12_DATA_SECTION
 	mov ds, ax
@@ -162,65 +163,70 @@ FAT12_READ_SECTION:
 	mov di, bx
 	mov bh, ah
 	mov ah, 0
-    mov cl, [FAT12_HEAD+BPB_SecPerTrk]
-    div cl
-    mov ch, al
-    shr ch, 1   ;ch=磁道号=商>>1
-    mov cl, ah
-    add cl, 1   ;cl=起始扇区号=余数+1
-    mov dh, al
-    and dh, 1   ;dh=磁头号=商&1
-    mov dl, [FAT12_HEAD+BS_DrvNum] ;dl=驱动器号
-    mov al, bh  ;al=要读扇区数
-    mov ah, 2
+	mov cl, [FAT12_HEAD+BPB_SecPerTrk]
+	div cl
+	mov ch, al
+	shr ch, 1   ;ch=磁道号=商>>1
+	mov cl, ah
+	add cl, 1   ;cl=起始扇区号=余数+1
+	mov dh, al
+	and dh, 1   ;dh=磁头号=商&1
+	mov dl, [FAT12_HEAD+BS_DrvNum] ;dl=驱动器号
+	mov al, bh  ;al=要读扇区数
+	mov ah, 2
 	mov bx, di
-    int 13h
+	int 13h
+	pop ds
 	pop di
 	pop dx
 	pop cx
 	pop ax
-    ret
+	ret
 
 ;获取到文件的起始fat簇号
 ;输入:ds:si=文件名字符串的地址
 ;输出:ax=获取到的文件fat簇号,没找到文件则为0
 FAT12_GET_CLUS:
-    push bx
+	push bx
 	push cx
 	push dx
-    push di
-    push si
-    push es
+	push di
+	push si
+	push ds
+	push es
 	push ax
 	mov ax, FAT12_DATA_SECTION
 	mov es, ax
 	pop ax
 FAT12_ROOT_LOADED:
-    ;从根目录区找到文件
-    mov cx, [es:FAT12_HEAD+BPB_RootEntCnt]   ;cx=要检索的根目录项的个数
-    mov bx, FAT12_ROOT
+	;从根目录区找到文件
+	mov cx, [es:FAT12_HEAD+BPB_RootEntCnt]   ;cx=要检索的根目录项的个数
+	mov bx, FAT12_ROOT
 FAT12_COMPARE_FILE_NAME:
-    push cx
-    mov di, bx    
-    mov cx, FAT12_ROOT_FILE_NAME_LEN
-    repe cmpsb
-    pop cx
-    jz FAT12_FILE_FOUND
-    add bx, FAT12_ROOT_ENTRY_SIZE  ;前进到下一个根目录项
-    loop FAT12_COMPARE_FILE_NAME
+	push cx
+	push si
+	mov di, bx
+	mov cx, FAT12_ROOT_FILE_NAME_LEN
+	repe cmpsb
+	pop si
+	pop cx
+	jz FAT12_FILE_FOUND
+	add bx, FAT12_ROOT_ENTRY_SIZE  ;前进到下一个根目录项
+	loop FAT12_COMPARE_FILE_NAME
 FAT12_FILE_NOT_FOUND:
-    mov ax, 0
-    jmp FAT12_END_GET_CLUS
+	mov ax, 0
+	jmp FAT12_END_GET_CLUS
 FAT12_FILE_FOUND:
-    mov ax, [es:bx+FAT12RootEntry_FirstClus]
+	mov ax, [es:bx+FAT12RootEntry_FirstClus]
 FAT12_END_GET_CLUS:
 	pop es
-    pop si
-    pop di
+	pop ds
+	pop si
+	pop di
 	pop dx
 	pop cx
-    pop bx
-    ret
+	pop bx
+	ret
 
 ;根据文件的fat簇号把文件加载到内存
 ;输入:ax=文件的第一个fat簇号
@@ -239,44 +245,44 @@ FAT12_LOAD_FILE_BY_CLUS:
 	mov ds, ax
 	pop ax
 FAT12_LOAD_SECTION_OF_FILE:
-    ;加载当前fat簇
-    cmp ax, 0ff7h
-    je FAT12_BAD_FAT_SECTION
-    cmp ax, 0ff8h
-    jae FAT12_END_LOAD_SECTION_OF_FILE
-    push ax
-    sub ax, 2   ;第0和第1个fat簇不使用，故要减二
-    add ax, [FAT12_INFO+FAT12Info_DataStart] ;ax=当前fat簇的扇区号
-    mov ah, 1
-    call FAT12_READ_SECTION
-    pop ax
-    add bx, FAT12_SECTION_SIZE
-    ;找到下一个fat簇
-    mov dx, 0
-    mov cx, 2
-    div cx
-    mov di, dx
-    mov cx, 3
-    mul cx
-    mov si, ax
-    add si, FAT12_TABLE
-    mov eax, [si]
-    cmp di, 1
-    jne FAT12_EVEN_FAT_NUM
-    shr eax, 12
+	;加载当前fat簇
+	cmp ax, 0ff7h
+	je FAT12_BAD_FAT_SECTION
+	cmp ax, 0ff8h
+	jae FAT12_END_LOAD_SECTION_OF_FILE
+	push ax
+	sub ax, 2   ;第0和第1个fat簇不使用，故要减二
+	add ax, [FAT12_INFO+FAT12Info_DataStart] ;ax=当前fat簇的扇区号
+	mov ah, 1
+	call FAT12_READ_SECTION
+	pop ax
+	add bx, FAT12_SECTION_SIZE
+	;找到下一个fat簇
+	mov dx, 0
+	mov cx, 2
+	div cx
+	mov di, dx
+	mov cx, 3
+	mul cx
+	mov si, ax
+	add si, FAT12_TABLE
+	mov eax, [si]
+	cmp di, 1
+	jne FAT12_EVEN_FAT_NUM
+	shr eax, 12
 FAT12_EVEN_FAT_NUM:
-    and ax, 0fffh
-    jmp FAT12_LOAD_SECTION_OF_FILE
+	and ax, 0fffh
+	jmp FAT12_LOAD_SECTION_OF_FILE
 FAT12_BAD_FAT_SECTION:
 FAT12_END_LOAD_SECTION_OF_FILE:
-	pop fs
+	pop ds
 	pop si
 	pop di
 	pop dx
 	pop cx
 	pop bx
 	pop eax
-    ret
+	ret
 
 ;根据文件的文件名把文件加载到内存
 ;输入:ds:si=文件名字符串的地址

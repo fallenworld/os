@@ -1,19 +1,26 @@
 org 07c00h
 %include 'fat12head.inc'
 %include 'fat12.asm'
+%include 'loader.inc'
 
-LOADER_SECTION_ADDR equ 9000h
-LOADER_OFFSET_ADDR	equ 0100h
+BOOT_STACK_BASE_ADDR equ 7c00h
 
 FAT12_START:
 	jmp START
 
 START:
+	mov ax, cs
+	mov ds, ax
+	mov es, ax
+	mov ss, ax
+	mov fs, ax
+	mov gs, ax
+	mov sp, BOOT_STACK_BASE_ADDR
 	;初始化FAT12处理程序
 	mov al, 0
 	call FAT12_INIT
 	;把LOADER加载到内存
-	mov si, LOADER
+	mov si, loaderFileName
 	mov ax, LOADER_SECTION_ADDR
 	mov es, ax
 	mov bx, LOADER_OFFSET_ADDR
@@ -21,8 +28,7 @@ START:
 	;执行LOADER
 	jmp LOADER_SECTION_ADDR:LOADER_OFFSET_ADDR
 
-LOADER db 'LOADER     '
-
+loaderFileName db 'LOADER     '
 
 ;引导扇区格式
 times 	510-($-$$)	db	0	

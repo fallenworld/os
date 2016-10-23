@@ -1,6 +1,6 @@
-org 0100h
+%include 'loader.inc'
 
-loaderStart:
+START:
 	mov ax, cs
 	mov es, ax
 	mov ax, 01301h
@@ -11,6 +11,5 @@ loaderStart:
     mov bp, excutedStr
     int 10h
 	jmp $
-	
-data:
-	excutedStr db "Loader excuted"
+
+excutedStr db "Kernel excuted"
