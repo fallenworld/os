@@ -1,7 +1,7 @@
 org 07c00h
-%include 'fat12head.inc'
+%include 'include/fat12head.inc'
+%include 'include/loader.inc'
 %include 'fat12.asm'
-%include 'loader.inc'
 
 BOOT_STACK_BASE_ADDR equ 7c00h
 
@@ -28,7 +28,7 @@ START:
 	;执行LOADER
 	jmp LOADER_SECTION_ADDR:LOADER_OFFSET_ADDR
 
-loaderFileName db 'LOADER     '
+loaderFileName db 'LOADER  BIN'
 
 ;引导扇区格式
 times 	510-($-$$)	db	0	

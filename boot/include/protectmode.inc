@@ -38,3 +38,15 @@ DA_386TSS 	equ	89h		;可用386任务状态段类型值
 DA_386CGate equ	8Ch		;386调用门类型值
 DA_386IGate	equ	8Eh		;386中断门类型值
 DA_386TGate	equ	8Fh		;386陷阱门类型值
+
+PG_P		equ	1	;页存在属性位
+PG_RWR		equ	0	;R/W属性位值,读/执行
+PG_RWW		equ	2	;R/W属性位值,读/写/执行
+PG_USS		equ	0	;U/S属性位值,系统级
+PG_USU		equ	4	;U/S属性位值,用户级
+
+PAGE_SIZE 			equ 4096 		;一页的大小
+PAGE_DIR_SIZE 		equ PAGE_SIZE	;页目录表的大小
+PAGE_TABLE_SIZE 	equ PAGE_SIZE	;页表/页目录表的大小
+ENT_PER_TABLE 		equ 1024 		;一个页表/页目录表中的条目个数
+MEM_PER_PAGE_TABLE 	equ 400000h		;一个页表对应的内存大小

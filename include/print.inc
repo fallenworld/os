@@ -1,0 +1,6 @@
+extern setPrintPosition
+extern clearScreen
+extern printHex
+extern printDwordHex
+extern printChar
+extern printStr

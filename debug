@@ -1,6 +1,3 @@
 #!/bin/bash
-sudo mount -o loop boot.img /mnt/floppy/
-sudo cp -fv loader /mnt/floppy/
-sudo cp -fv kernel /mnt/floppy/
-sudo umount /mnt/floppy/
+make image
 bochs
