@@ -1,15 +1,20 @@
-%include 'print.inc'
+global _start
+extern cstart
+
+SELECTOR_FLAT_C equ 8
 
 [section .text]
-
-global _start
-
 _start:
-	call clearScreen
-	push kernelRunningStr
-	call printStr
-	add sp, 4
-	jmp $
+	;切换栈
+	mov esp, STACK_BASE
+	;进入c语言函数
+	call cstart
+	jmp SELECTOR_FLAT_C:LOOP
+LOOP:
+	sti
+	hlt
 
-[section .data]
-kernelRunningStr db 'Kernel entered',`\n\0`
+[section .bss]
+resb 2048
+STACK_BASE:
+

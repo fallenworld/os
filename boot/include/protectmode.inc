@@ -1,3 +1,6 @@
+%ifndef OS_PROTECT_MODE_INC_
+%define OS_PROTECT_MODE_INC_
+
 ;用来生成描述符的宏
 %macro Descripter 3
 	dw %2 & 0ffffh
@@ -47,6 +50,8 @@ PG_USU		equ	4	;U/S属性位值,用户级
 
 PAGE_SIZE 			equ 4096 		;一页的大小
 PAGE_DIR_SIZE 		equ PAGE_SIZE	;页目录表的大小
-PAGE_TABLE_SIZE 	equ PAGE_SIZE	;页表/页目录表的大小
+PAGE_TABLE_SIZE 	equ PAGE_SIZE	;页表的大小
 ENT_PER_TABLE 		equ 1024 		;一个页表/页目录表中的条目个数
 MEM_PER_PAGE_TABLE 	equ 400000h		;一个页表对应的内存大小
+
+%endif

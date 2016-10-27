@@ -17,7 +17,7 @@ START:
 	mov gs, ax
 	mov sp, BOOT_STACK_BASE_ADDR
 	;初始化FAT12处理程序
-	mov al, 0
+	xor al, al
 	call FAT12_INIT
 	;把LOADER加载到内存
 	mov si, loaderFileName

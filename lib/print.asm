@@ -7,17 +7,19 @@ WHITE 		equ 07h
 WHITE_BLINK equ 87h
 
 ;导出符号
-global setPrintPosition
+global setPrintMemOffset
 global clearScreen
 global printHex
 global printDwordHex
+global printWordHex
+global printByteHex
 global printChar
 global printStr
 
 ;设置输出的位置
-;void setPrintPosition(uint16 offset);
+;void setPrintMemOffset(u16 offset);
 ;参数 offset 要设置的输出位置的显存偏移地址
-setPrintPosition:
+setPrintMemOffset:
 	push ebp
 	mov ebp, esp
 	push ebx
@@ -36,9 +38,9 @@ clearScreen:
 	push es
 	mov ax, gs
 	mov es, ax
-	mov edi, 0
+	xor edi, edi
 	mov ecx, 7fffh
-	mov al, 0
+	xor al, al
 	rep stosb
 	mov byte [gs:0], '_'
 	mov byte [gs:1], WHITE_BLINK
@@ -48,7 +50,7 @@ clearScreen:
 	ret
 
 ;将一个十六进制位输出在屏幕上
-;uint16 printHex(uint8 b);
+;u16 printHex(u8 b);
 ;参数b 要输出的数值，只会输出最低位的16进制位
 ;返回值 ax=当前屏幕上输出位置的显存偏移地址
 printHex:
@@ -69,7 +71,7 @@ SHOW_HEX:
 	ret
 
 ;将一个32位数值的十六进制形式输出在屏幕上
-;uint16 printDwordHex(uint32 value);
+;u16 printDwordHex(u32 value);
 ;参数value 要输出的数值
 ;返回值 ax=当前屏幕上输出位置的显存偏移地址
 printDwordHex:
@@ -87,8 +89,46 @@ PRINT_DWORD_HEX_LOOP:
 	leave
 	ret
 
+;将一个16位数值的十六进制形式输出在屏幕上
+;u16 printWordHex(u16 value);
+;参数value 要输出的数值
+;返回值 ax=当前屏幕上输出位置的显存偏移地址
+printWordHex:
+	push ebp
+	mov ebp, esp
+	mov cl, 16
+PRINT_WORD_HEX_LOOP:
+	sub cl, 4
+	mov eax, [ebp+8]
+	shr eax, cl
+	push eax
+	call printHex
+	cmp cl, 0
+	jnz PRINT_WORD_HEX_LOOP
+	leave
+	ret
+
+;将一个8位数值的十六进制形式输出在屏幕上
+;u16 printByteHex(u8 value);
+;参数value 要输出的数值
+;返回值 ax=当前屏幕上输出位置的显存偏移地址
+printByteHex:
+	push ebp
+	mov ebp, esp
+	mov cl, 8
+PRINT_BYTE_HEX_LOOP:
+	sub cl, 4
+	mov eax, [ebp+8]
+	shr eax, cl
+	push eax
+	call printHex
+	cmp cl, 0
+	jnz PRINT_BYTE_HEX_LOOP
+	leave
+	ret
+
 ;向屏幕输出一个字符
-;uint16 printChar(char c);
+;u16 printChar(unsigned char c);
 ;参数c 字符的Ascii码
 ;返回值 ax=当前屏幕上输出位置的显存偏移地址
 printChar:
@@ -115,14 +155,14 @@ PRINT_CHAR_NEW_LINE:
 	mov bl, BYTES_PER_ROW
 	div bl
 	mov al, ah
-	mov ah, 0
+	xor ah, ah
 	sub di, ax
 	add di, BYTES_PER_ROW
 END_PRINT_CHAR:
 	mov [displayMemOffset], di
 	mov byte [gs:di], '_'
 	mov byte [gs:di+1], WHITE_BLINK
-	mov eax, 0
+	xor eax, eax
 	mov ax, di
 	pop edi
 	pop ebx
@@ -131,7 +171,7 @@ END_PRINT_CHAR:
 
 
 ;向屏幕输出一个字符串
-;uint16 printStr(char* str);
+;u16 printStr(char* str);
 ;参数str 字符串的地址，该字符串以/0结尾
 ;返回值 ax=当前屏幕上输出位置的显存偏移地址
 printStr:
@@ -165,7 +205,7 @@ PRINT_STR_NEW_LINE:
 	mov bl, BYTES_PER_ROW
 	div bl
 	mov al, ah
-	mov ah, 0
+	xor ah, ah
 	sub di, ax
 	add di, BYTES_PER_ROW
 	jmp SHOW_CHAR
@@ -173,7 +213,7 @@ END_PRINT_STR:
 	mov [displayMemOffset], di
 	mov byte [gs:di], '_'
 	mov byte [gs:di+1], WHITE_BLINK
-	mov eax, 0
+	xor eax, eax
 	mov ax, di
 	pop edi
 	pop esi

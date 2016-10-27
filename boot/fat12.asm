@@ -80,14 +80,14 @@ FAT12_INIT:
 	mov ds, ax
 	pop ax
 	;复位软盘
-	mov ah, 0
+	xor ah, ah
 	mov dl, al
 	int 13h
 	;读取FAT12第一个扇区
 	mov dl, al
-	mov dh, 0
+	xor dh, dh
 	mov cl, 1
-	mov ch, 0
+	xor ch, ch
 	mov ax, ss
 	mov es, ax
 	sub sp, FAT12_SECTION_SIZE
@@ -112,7 +112,7 @@ FAT12_INIT:
 	div bl
 	and ah, 1
 	add al, ah
-	mov ah, 0
+	xor ah, ah
 	mov [FAT12_INFO+FAT12Info_RootSectionCount], ax	;14
 	mov ax, FAT12_ROOT_START_SECTION
 	add ax, [FAT12_INFO+FAT12Info_RootSectionCount]
@@ -162,7 +162,7 @@ FAT12_READ_SECTION:
 	pop ax
 	mov di, bx
 	mov bh, ah
-	mov ah, 0
+	xor ah, ah
 	mov cl, [FAT12_HEAD+BPB_SecPerTrk]
 	div cl
 	mov ch, al
@@ -258,7 +258,7 @@ FAT12_LOAD_SECTION_OF_FILE:
 	pop ax
 	add bx, FAT12_SECTION_SIZE
 	;找到下一个fat簇
-	mov dx, 0
+	xor dx, dx
 	mov cx, 2
 	div cx
 	mov di, dx

@@ -32,6 +32,7 @@ JUMP_TO_PROTECT_MODE:
 	call KILL_MOTOR
 	;加载GDTR
 	lgdt [gdtPtr]
+	lidt [idtPtr]
 	;关中断
 	cli
 	;打开A20地址线
@@ -55,8 +56,8 @@ GET_MEM_INFO:
 	push si
 	push di
 	push es
-	mov si, 0
-	mov ebx, 0
+	xor si, si
+	xor ebx, ebx
 GET_AN_ARDS:
 	mov eax, 0e820h
 	mov ecx, 20
@@ -69,7 +70,7 @@ GET_AN_ARDS:
 	jne GET_AN_ARDS
 	jmp END_GET_ARDS
 GET_ARDS_FAIL:
-	mov ax, 0
+	xor ax, ax
 END_GET_ARDS:
 	mov ax, si
 	pop es
@@ -83,7 +84,7 @@ END_GET_ARDS:
 KILL_MOTOR:
 	push dx
 	mov dx, 03f2h
-	mov al, 0
+	xor al, al
 	out dx, al
 	pop dx
 	ret
@@ -134,9 +135,9 @@ RUN_KERNEL:
 ;显示可用内存信息并获取最大可用内存地址
 ;输出eax=最大可用内存地址
 SHOW_MEM_INFO:
-	mov ecx, 0
+	xor ecx, ecx
 	mov cx, [ardsCount]
-	mov eax, 0	;eax=最大可用内存
+	xor eax, eax	;eax=最大可用内存
 	mov ebx, ardsBuf
 SHOW_AN_ARDS:
 	mov edx, [ebx+Ards_Type]
@@ -176,7 +177,7 @@ ENABLE_PAGE:
 	mov es, ax
 	pop eax
 	;计算页表个数
-	mov edx, 0
+	xor edx, edx
 	mov ecx, MEM_PER_PAGE_TABLE
 	div ecx
 	and edx, 1
@@ -298,9 +299,13 @@ GDT_LEN equ $-GDT
 ;gdtr寄存器的值
 gdtPtr 	dw GDT_LEN-1
  		dd GDT + LOADER_BASE_ADDR
+;idtr寄存器的值（在kernel再去设置实际的值）
+idtPtr  dw 0
+		dd 0
 
 ;选择符
 SELECTOR:
+SELECTOR_EMPTY 		equ 0
 SELECTOR_FLAT_C 	equ DESC_FLAT_C-GDT
 SELECTOR_FLAT_RW 	equ DESC_FLAT_RW-GDT
 SELECTOR_VIDEO 		equ DESC_VIDEO-GDT
