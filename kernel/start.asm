@@ -1,20 +1,18 @@
 global _start
-extern cstart
+extern main
 
 SELECTOR_FLAT_C equ 8
 
 [section .text]
 _start:
 	;切换栈
-	mov esp, STACK_BASE
+	mov esp, kernelStack
 	;进入c语言函数
-	call cstart
-	jmp SELECTOR_FLAT_C:LOOP
-LOOP:
-	sti
+	call main 
 	hlt
 
 [section .bss]
+;内核栈
 resb 2048
-STACK_BASE:
+kernelStack:
 

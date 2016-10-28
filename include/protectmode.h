@@ -4,14 +4,15 @@
 #include "type.h"
 
 /* 选择符 */
-#define SELECTOR_FLAT_C 	8  //代码段选择符
-#define SELECTOR_FLAT_RW 	16 //数据段选择符
-
+#define SELECTOR_EMPTY 		0
+#define SELECTOR_FLAT_C 	0x08	//代码段选择符
+#define SELECTOR_FLAT_RW 	0x10	//数据段选择符
+#define SELECTOR_VIDEO 		0x18 	//显存选择符
+#define SELECTOR_TSS 		0x20	//TSS选择符
 
 /* 外部中断的中断向量号 */
 #define INT_VECTOR_IRQ0 	0x20 	//IRQ0对应的中断号
 #define INT_VECTOR_IRQ8 	0x28 	//IRQ8对应的中断号
-
 
 /*            结构体定义                *
  * __attribute__((packed))用于取消对齐  */
@@ -23,7 +24,7 @@ typedef struct Descriptor
 	u16 baseLow; 			//段基址0-15位
 	u8  baseMid; 			//段基址16-23位
 	u8  attrLow; 			//属性字段低8位
-	u8  limitHighAttrHight; 	//低4字节:段限长16-20位，高4字节:属性字段高4位
+	u8  limitHighAttrHight; //低4字节:段限长16-20位，高4字节:属性字段高4位
 	u8  baseHigh; 			//段基址24-31位
 }__attribute__((packed)) Descriptor;
 
@@ -37,7 +38,7 @@ typedef struct Gate
 	u16 offsetHigh; 	//偏移量16-31位
 }__attribute__((packed)) Gate;
 
-//全局描述符表寄存器 
+//gptr全局描述符表寄存器 
 typedef struct GdtPtr
 {
     u16 limit; 	//GDT的限长
@@ -45,6 +46,38 @@ typedef struct GdtPtr
 }__attribute__((packed)) GdtPtr;
 
 typedef GdtPtr IdtPtr; 	//中段描述符表寄存器
+
+//TSS任务状态段
+typedef struct Tss
+{
+	u32 lastLink;
+	u32 esp0;
+	u32 ss0;
+	u32 esp1;
+	u32 ss1;
+	u32 esp2;
+	u32 ss2;
+	u32 cr3;
+	u32 eip;
+	u32 eflags;
+	u32 eax;
+	u32 ecx;
+	u32 edx;
+	u32 ebx;
+	u32 esp;
+	u32 ebp;
+	u32 esi;
+	u32 edi;
+	u32 es;
+	u32 cs;
+	u32 ss;
+	u32 ds;
+	u32 fs;
+	u32 gs;
+	u32 ldtSelector;
+	u32 ioOffset;
+	u32 ioBase;
+}__attribute__((packed)) Tss;
 
 typedef void (*InterruptHandler)();  //中断服务程序类型
 
@@ -79,6 +112,16 @@ typedef void (*InterruptHandler)();  //中断服务程序类型
 #define	DA_386CGate		0x8C	//386调用门类型值
 #define	DA_386IGate		0x8E	//386中断门类型值
 
+/* 选择符属性 */
+//特权级
+#define SA_RPL0 	0x00 	//RPL=0
+#define SA_RPL1 	0x01 	//RPL=1
+#define SA_RPL2 	0x02 	//RPL=2
+#define SA_RPL3 	0x03 	//RPL=3
+//所在的描述符表
+#define SA_GDT 	0x00 	//描述符在GDT中
+#define SA_LDT 	0x04 	//描述符在LDT中
+
 /* 中断描述符特权级 */
 #define	PRIVILEGE_KRNL	0 	//内核级
 #define	PRIVILEGE_TASK	1
@@ -103,25 +146,28 @@ typedef void (*InterruptHandler)();  //中断服务程序类型
 #define	INT_VECTOR_COPROC_ERR	0x10
 
 
-/* 中断相关的函数 */
+//设置GDT(全局描述符表)
+void setupGdt(Descriptor* gdt, int descriptorCount);
 
-//切换GDT的位置
-void switchGdt(Descriptor* gdt, int descriptorCount);
+//设置IDT(中断描述符表)
+void setupIdt(Gate* idt, int gateCount);
+
+//设置TSS(任务状态段)
+void setupTss(Tss* tss, Descriptor* gdt, int tssIndex);
 
 //设置8259A
 void init8259A();
 
-//设置中断描述符表
-void setIdt(Gate* idt, int gateCount);
+//初始化段描述符
+Descriptor* initDescriptor(Descriptor* descriptor, u32 base, u32 limit, u16 attr);
 
-//设置门的值
-void setGate(Gate* gate, u8 gateType, InterruptHandler handler, u8 privilege);
+//初始化门的值
+Gate* initGate(Gate* gate, u8 gateType, InterruptHandler handler, u8 privilege);
 
 //异常处理函数
 void exceptionHandler(int vectorNum, int errorCode, int eip, int cs, int eflag);
 
 //硬件中断处理函数
 void hardwareInterruptHandler(int code);
-
 
 #endif //OS_PROTECT_MODE_H_

@@ -12,5 +12,15 @@ void* memcpy(void* dst, const void* src, size_t length)
 	{
 		*(dst_++) = *(src_++);
 	}
+	return dst;
 }
 
+void* memset(void* dst, int c, size_t n)
+{
+	char* dst_ = dst;
+	while(n--)
+	{
+		*(dst_++) = c;
+	}
+	return dst;
+}

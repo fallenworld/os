@@ -261,7 +261,7 @@ SET_KERNEL_ELF:
 	;读取ELF头，获取到程序头表的偏移、程序头表条目个数、程序入口地址
 	mov ebx, KERNEL_BASE_ADDR				;ebx=ElfHeader的基地址
 	mov eax, [ebx+ElfHeader_entry] 			;eax=程序入口地址
-	mov ecx, [ebx+ElfHeader_phnum] 	
+	mov ecx, [ebx+ElfHeader_phnum]
 	and ecx, 00ffh 							;ecx=程序头表中条目个数
 	add ebx, [ebx+ElfHeader_phoff] 			;ebx=程序头表的地址
 	;复制段到相应内存地址上去

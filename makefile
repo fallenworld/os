@@ -13,8 +13,8 @@ TRASHDIR 	= /home/fallenworld/trash
 
 BOOT 		= boot/boot.bin boot/loader.bin
 KERNEL 		= kernel/kernel.bin
-OBJS 		= kernel/kernel.o kernel/cstart.o kernel/protectmode.o kernel/interrupt.o lib/print.o lib/memcpy.o \
-				lib/portio.o
+OBJS 		= kernel/kernel.o kernel/start.o kernel/proc.o kernel/procasm.o kernel/protectmode.o \
+				 kernel/interrupt.o lib/string.o lib/portio.o lib/print.o
 
 .PHONY : all build image clean
 
@@ -43,16 +43,22 @@ boot/loader.bin : boot/loader.asm boot/fat12.asm boot/include/loader.inc boot/in
 kernel/kernel.bin : $(OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJS)
 
-kernel/kernel.o : kernel/kernel.asm
+kernel/start.o : kernel/start.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
-kernel/cstart.o : kernel/cstart.c include/print.h include/protectmode.h include/string.h include/type.h \
-					include/cstart.h
+kernel/kernel.o : kernel/kernel.c include/print.h include/protectmode.h include/string.h include/type.h \
+					include/kernel.h include/proc.h
+	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+kernel/proc.o : kernel/proc.c include/protectmode.h include/type.h include/proc.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
 kernel/protectmode.o : kernel/protectmode.c include/protectmode.h include/type.h include/portio.h \
 						include/interrupt.h include/print.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+kernel/procasm.o : kernel/proc.asm
+	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
 kernel/interrupt.o : kernel/interrupt.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
@@ -64,7 +70,7 @@ lib/print.o : lib/print.asm
 lib/portio.o : lib/portio.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
-lib/memcpy.o: lib/memcpy.c include/string.h include/type.h
+lib/string.o: lib/string.c include/string.h include/type.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
 
