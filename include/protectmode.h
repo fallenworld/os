@@ -3,84 +3,17 @@
 
 #include "type.h"
 
+
+/* 常量定义 */
+
+#define GDT_LEN 128 	//全局描述表的长度（表中描述符个数)
+
 /* 选择符 */
 #define SELECTOR_EMPTY 		0
 #define SELECTOR_FLAT_C 	0x08	//代码段选择符
 #define SELECTOR_FLAT_RW 	0x10	//数据段选择符
 #define SELECTOR_VIDEO 		0x18 	//显存选择符
 #define SELECTOR_TSS 		0x20	//TSS选择符
-
-/* 外部中断的中断向量号 */
-#define INT_VECTOR_IRQ0 	0x20 	//IRQ0对应的中断号
-#define INT_VECTOR_IRQ8 	0x28 	//IRQ8对应的中断号
-
-/*            结构体定义                *
- * __attribute__((packed))用于取消对齐  */
-
-//段描述符
-typedef struct Descriptor
-{
-    u16 limitLow; 			//段限长0-15位
-	u16 baseLow; 			//段基址0-15位
-	u8  baseMid; 			//段基址16-23位
-	u8  attrLow; 			//属性字段低8位
-	u8  limitHighAttrHight; //低4字节:段限长16-20位，高4字节:属性字段高4位
-	u8  baseHigh; 			//段基址24-31位
-}__attribute__((packed)) Descriptor;
-
-//中断描述符(门)
-typedef struct Gate
-{
-    u16 offsetLow; 		//偏移量0-15位
-	u16 selector; 		//选择符
-	u8  dcount; 		//只在调用门时有效，代表需要复制的双字参数数量
-	u8  attr; 			//属性字段
-	u16 offsetHigh; 	//偏移量16-31位
-}__attribute__((packed)) Gate;
-
-//gptr全局描述符表寄存器 
-typedef struct GdtPtr
-{
-    u16 limit; 	//GDT的限长
-	u32 base; 	//GDT的基址
-}__attribute__((packed)) GdtPtr;
-
-typedef GdtPtr IdtPtr; 	//中段描述符表寄存器
-
-//TSS任务状态段
-typedef struct Tss
-{
-	u32 lastLink;
-	u32 esp0;
-	u32 ss0;
-	u32 esp1;
-	u32 ss1;
-	u32 esp2;
-	u32 ss2;
-	u32 cr3;
-	u32 eip;
-	u32 eflags;
-	u32 eax;
-	u32 ecx;
-	u32 edx;
-	u32 ebx;
-	u32 esp;
-	u32 ebp;
-	u32 esi;
-	u32 edi;
-	u32 es;
-	u32 cs;
-	u32 ss;
-	u32 ds;
-	u32 fs;
-	u32 gs;
-	u32 ldtSelector;
-	u32 ioOffset;
-	u32 ioBase;
-}__attribute__((packed)) Tss;
-
-typedef void (*InterruptHandler)();  //中断服务程序类型
-
 
 /* 描述符属性 
  * DA_	:Descriptor attrbute(描述符属性)
@@ -127,47 +60,91 @@ typedef void (*InterruptHandler)();  //中断服务程序类型
 #define	PRIVILEGE_TASK	1
 #define	PRIVILEGE_USER	3	//用户级
 
-/* 中断向量号 */
-#define	INT_VECTOR_DIVIDE		0x0
-#define	INT_VECTOR_DEBUG		0x1
-#define	INT_VECTOR_NMI			0x2
-#define	INT_VECTOR_BREAKPOINT	0x3
-#define	INT_VECTOR_OVERFLOW		0x4
-#define	INT_VECTOR_BOUNDS		0x5
-#define	INT_VECTOR_INVAL_OP		0x6
-#define	INT_VECTOR_COPROC_NOT	0x7
-#define	INT_VECTOR_DOUBLE_FAULT	0x8
-#define	INT_VECTOR_COPROC_SEG	0x9
-#define	INT_VECTOR_INVAL_TSS	0xa
-#define	INT_VECTOR_SEG_NOT		0xb
-#define	INT_VECTOR_STACK_FAULT	0xc
-#define	INT_VECTOR_PROTECTION	0xd
-#define	INT_VECTOR_PAGE_FAULT	0xe
-#define	INT_VECTOR_COPROC_ERR	0x10
+
+/*              类型定义                *
+ * __attribute__((packed))用于取消对齐  */
+
+//段描述符
+typedef struct Descriptor
+{
+    u16 limitLow; 			//段限长0-15位
+    u16 baseLow; 			//段基址0-15位
+    u8  baseMid; 			//段基址16-23位
+    u8  attrLow; 			//属性字段低8位
+    u8  limitHighAttrHight; //低4字节:段限长16-20位，高4字节:属性字段高4位
+    u8  baseHigh; 			//段基址24-31位
+}__attribute__((packed)) Descriptor;
+
+//中断描述符(门)
+typedef struct Gate
+{
+    u16 offsetLow; 		//偏移量0-15位
+    u16 selector; 		//选择符
+    u8  dcount; 		//只在调用门时有效，代表需要复制的双字参数数量
+    u8  attr; 			//属性字段
+    u16 offsetHigh; 	//偏移量16-31位
+}__attribute__((packed)) Gate;
+
+//gptr全局描述符表寄存器
+typedef struct GdtPtr
+{
+    u16 limit; 	//GDT的限长
+    u32 base; 	//GDT的基址
+}__attribute__((packed)) GdtPtr;
+
+typedef GdtPtr IdtPtr; 	//中段描述符表寄存器
+
+//TSS任务状态段
+typedef struct Tss
+{
+    u32 lastLink;
+    u32 esp0;
+    u32 ss0;
+    u32 esp1;
+    u32 ss1;
+    u32 esp2;
+    u32 ss2;
+    u32 cr3;
+    u32 eip;
+    u32 eflags;
+    u32 eax;
+    u32 ecx;
+    u32 edx;
+    u32 ebx;
+    u32 esp;
+    u32 ebp;
+    u32 esi;
+    u32 edi;
+    u32 es;
+    u32 cs;
+    u32 ss;
+    u32 ds;
+    u32 fs;
+    u32 gs;
+    u32 ldtSelector;
+    u32 ioOffset;
+    u32 ioBase;
+}__attribute__((packed)) Tss;
+
+typedef void (*GateEntry)();  //门入口地址
 
 
+/* 模块内部定义的全局变量 */
+extern Descriptor   gdt[GDT_LEN]; //全局描述符表
+extern Tss          tss;          //系统全局的任务状态段
+
+
+/* 模块内部定义的函数 */
+//初始保护模式模块
+void protectModeInit();
 //设置GDT(全局描述符表)
 void setupGdt(Descriptor* gdt, int descriptorCount);
-
-//设置IDT(中断描述符表)
-void setupIdt(Gate* idt, int gateCount);
-
 //设置TSS(任务状态段)
 void setupTss(Tss* tss, Descriptor* gdt, int tssIndex);
-
-//设置8259A
-void init8259A();
-
 //初始化段描述符
 Descriptor* initDescriptor(Descriptor* descriptor, u32 base, u32 limit, u16 attr);
-
 //初始化门的值
-Gate* initGate(Gate* gate, u8 gateType, InterruptHandler handler, u8 privilege);
+Gate* initGate(Gate* gate, u8 gateType, GateEntry entry, u8 privilege);
 
-//异常处理函数
-void exceptionHandler(int vectorNum, int errorCode, int eip, int cs, int eflag);
-
-//硬件中断处理函数
-void hardwareInterruptHandler(int code);
 
 #endif //OS_PROTECT_MODE_H_

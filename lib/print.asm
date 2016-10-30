@@ -1,10 +1,11 @@
-displayMemOffset dw 0 	;当前输出位置的显存偏移地址
 
 BYTES_PER_ROW 	equ 160
 BYTES_PER_CHAR 	equ 2
 
 WHITE 		equ 07h
-WHITE_BLINK equ 87h
+WHITE_BLINK     equ 87h
+
+displayMemOffset dw 0 	;当前输出位置的显存偏移地址
 
 ;导出符号
 global setPrintMemOffset

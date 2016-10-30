@@ -1,6 +1,6 @@
 00000000000i[      ] Bochs x86 Emulator 2.6.8
 00000000000i[      ]   Built from SVN snapshot on May 3, 2015
-00000000000i[      ] Compiled on Sep 20 2016 at 11:30:00
+00000000000i[      ] Compiled on Oct 28 2016 at 17:23:03
 00000000000i[      ] System configuration
 00000000000i[      ]   processors: 1 (cores=1, HT threads=1)
 00000000000i[      ]   A20 line support: yes
@@ -31,7 +31,7 @@
 00000000000i[      ]   SB16 support: no
 00000000000i[      ]   USB support: no
 00000000000i[      ]   VGA extension support: vbe
-00000000000i[MEM0  ] allocated memory at 0xb41aa008. after alignment, vector=0xb41ab000
+00000000000i[MEM0  ] allocated memory at 0x7f21949cb010. after alignment, vector=0x7f21949cc000
 00000000000i[MEM0  ] 32.00MB
 00000000000i[MEM0  ] mem block size = 0x00100000, blocks=32
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/usr/local/share/bochs/BIOS-bochs-latest')
@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Thu Oct 27 22:46:35 2016 (time0=1477579595)
+00000000000i[CMOS  ] Setting initial clock to: Mon Oct 31 00:41:00 2016 (time0=1477845660)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -51,6 +51,8 @@
 00000000000i[VGA   ] interval=200000, mode=realtime
 00000000000i[MEM0  ] Register memory access handlers: 0x0000e0000000 - 0x0000e0ffffff
 00000000000i[BXVGA ] VBE Bochs Display Extension Enabled
+00000000000i[XGUI  ] test_alloc_colors: 16 colors available out of 16 colors tried
+00000000000i[XGUI  ] font 8 wide x 16 high, display depth = 24
 00000000000i[MEM0  ] rom at 0xc0000/41472 ('/usr/share/vgabios/vgabios.bin')
 00000000000i[PLUGIN] init_dev of 'floppy' plugin device by virtual method
 00000000000i[DMA   ] channel 2 used by Floppy Drive
@@ -78,7 +80,6 @@
 00000000000i[PAR   ] parallel port 1 at 0x0378 irq 7
 00000000000i[PLUGIN] init_dev of 'serial' plugin device by virtual method
 00000000000i[SER   ] com1 at 0x03f8 irq 4 (mode: null)
-00000000000i[PLUGIN] init_dev of 'iodebug' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'pci' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'pci2isa' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'cmos' plugin device by virtual method
@@ -93,7 +94,6 @@
 00000000000i[PLUGIN] register state of 'extfpuirq' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'parallel' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'serial' plugin device by virtual method
-00000000000i[PLUGIN] register state of 'iodebug' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'acpi' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'ioapic' plugin device by virtual method
 00000000000i[PLUGIN] register state of 'keyboard' plugin device by virtual method
@@ -127,8 +127,11 @@
 00000000000i[PLUGIN] reset of 'extfpuirq' plugin device by virtual method
 00000000000i[PLUGIN] reset of 'parallel' plugin device by virtual method
 00000000000i[PLUGIN] reset of 'serial' plugin device by virtual method
-00000000000i[PLUGIN] reset of 'iodebug' plugin device by virtual method
-00000000000i[      ] set SIGINT handler to bx_debug_ctrlc_handler
+00000000000i[GDBST ] addr 000000000000fff0 len 1
+00000000000i[GDBST ] addr 000000000000fff0 len 1
+00000000000i[GDBST ] addr 000000000000ffc0 len 40
+00000000000i[GDBST ] addr 000000000000fff0 len 8
+00000000000i[GDBST ] addr 000000000000fff0 len 7
 00000004661i[BIOS  ] $Revision: 12579 $ $Date: 2014-12-26 11:31:39 +0100 (Fr, 26. Dez 2014) $
 00000318049i[KBD   ] reset-disable command received
 00000320818i[BIOS  ] Starting rombios32
@@ -169,26 +172,31 @@
 00001529243i[BXVGA ] VBE known Display Interface b0c5
 00001532168i[VBIOS ] VBE Bios $Id: vbe.c,v 1.64 2011/07/19 18:25:05 vruppert Exp $
 00014040196i[BIOS  ] Booting from 0000:7c00
-00016303799e[CPU0  ] LLDT: selector.ti != 0
-00016305611i[CPU0  ] WARNING: HLT instruction with IF=0!
-25944121112i[      ] Ctrl-C detected in signal handler.
-25944121112i[      ] dbg: Quit
-25944121112i[CPU0  ] CPU is in protected mode (halted)
-25944121112i[CPU0  ] CS.mode = 32 bit
-25944121112i[CPU0  ] SS.mode = 32 bit
-25944121112i[CPU0  ] EFER   = 0x00000000
-25944121112i[CPU0  ] | EAX=00000320  EBX=00032800  ECX=00000000  EDX=00032740
-25944121112i[CPU0  ] | ESP=000327b8  EBP=000327c8  ESI=00080000  EDI=00000000
-25944121112i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af PF cf
-25944121112i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-25944121112i[CPU0  ] |  CS:0008( 0001| 0|  0) 00000000 ffffffff 1 1
-25944121112i[CPU0  ] |  DS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-25944121112i[CPU0  ] |  SS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-25944121112i[CPU0  ] |  ES:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-25944121112i[CPU0  ] |  FS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-25944121112i[CPU0  ] |  GS:0018( 0003| 0|  0) 000b8000 0000ffff 0 0
-25944121112i[CPU0  ] | EIP=00030e8d (00030e8d)
-25944121112i[CPU0  ] | CR0=0xe0000011 CR2=0x00000000
-25944121112i[CPU0  ] | CR3=0x00100000 CR4=0x00000000
-25944121112i[CMOS  ] Last time is 1477586081 (Fri Oct 28 00:34:41 2016)
-25944121112i[SIM   ] quit_sim called with exit code 0
+00069720920i[XGUI  ] charmap update. Font Height is 16
+01351947800i[GDBST ] Got byte 3
+01351947800i[GDBST ] stopped with ac3
+01351947800i[GDBST ] addr 000000000004bec0 len 40
+01351947800i[GDBST ] addr 000000000004be80 len 40
+01351947800p[GDBST ] >>PANIC<< Debugger asked us to quit
+01351947800i[CPU0  ] CPU is in protected mode (active)
+01351947800i[CPU0  ] CS.mode = 32 bit
+01351947800i[CPU0  ] SS.mode = 32 bit
+01351947800i[CPU0  ] EFER   = 0x00000000
+01351947800i[CPU0  ] | EAX=000001d7  EBX=00033000  ECX=00000000  EDX=00000000
+01351947800i[CPU0  ] | ESP=0004beac  EBP=0004bebc  ESI=00000000  EDI=00000000
+01351947800i[CPU0  ] | IOPL=1 id vip vif ac vm rf nt of df IF tf sf zf af pf cf
+01351947800i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+01351947800i[CPU0  ] |  CS:0005( 0000| 1|  1) 00000000 ffffffff 1 1
+01351947800i[CPU0  ] |  DS:000d( 0001| 1|  1) 00000000 ffffffff 1 1
+01351947800i[CPU0  ] |  SS:000d( 0001| 1|  1) 00000000 ffffffff 1 1
+01351947800i[CPU0  ] |  ES:000d( 0001| 1|  1) 00000000 ffffffff 1 1
+01351947800i[CPU0  ] |  FS:000d( 0001| 1|  1) 00000000 ffffffff 1 1
+01351947800i[CPU0  ] |  GS:0019( 0003| 0|  1) 000b8000 0000ffff 0 0
+01351947800i[CPU0  ] | EIP=00030970 (00030970)
+01351947800i[CPU0  ] | CR0=0xe0000011 CR2=0x00000000
+01351947800i[CPU0  ] | CR3=0x00100000 CR4=0x00000000
+01351947800i[CPU0  ] 0x00030970>> add dword ptr ss:[ebp-4], 0x00000001 : 8345FC01
+01351947800i[CMOS  ] Last time is 1477845997 (Mon Oct 31 00:46:37 2016)
+01351947800i[XGUI  ] Exit
+01351947800i[      ] restoring default signal behavior
+01351947800i[SIM   ] quit_sim called with exit code 1

@@ -1,7 +1,7 @@
-global _start
 extern main
 
-SELECTOR_FLAT_C equ 8
+global _start
+global kernelStack
 
 [section .text]
 _start:

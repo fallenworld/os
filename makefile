@@ -2,19 +2,19 @@
 TEXTBASE	= 0x30400
 
 ASM 		= nasm
-CC 			= gcc
-LD 			= ld
+CC 		= gcc
+LD 		= ld
 ASMBFLAGS	= -i boot/
-ASMKFLAGS 	= -I include/asm/ -f elf
-CFLAGS 		= -I include/ -c -fno-builtin
-LDFLAGS 		= -Ttext $(TEXTBASE)
+ASMKFLAGS 	= -i include/ -g -f elf32
+CFLAGS 		= -I include/ -ggdb  -m32 -c -fno-builtin -fno-stack-protector
+LDFLAGS 	= -Ttext $(TEXTBASE) -m elf_i386
 SINGLEOUT 	= -o $@ $<
 TRASHDIR 	= /home/fallenworld/trash
 
 BOOT 		= boot/boot.bin boot/loader.bin
 KERNEL 		= kernel/kernel.bin
-OBJS 		= kernel/kernel.o kernel/start.o kernel/proc.o kernel/procasm.o kernel/protectmode.o \
-				 kernel/interrupt.o lib/string.o lib/portio.o lib/print.o
+OBJS 		= kernel/start.o kernel/kernel.o kernel/protectmode.o  kernel/process.o kernel/proesscasm.o \
+				 kernel/interrupt.o kernel/interruptasm.o lib/string.o lib/portio.o lib/print.o lib/time.o
 
 .PHONY : all build image clean
 
@@ -46,21 +46,25 @@ kernel/kernel.bin : $(OBJS)
 kernel/start.o : kernel/start.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
-kernel/kernel.o : kernel/kernel.c include/print.h include/protectmode.h include/string.h include/type.h \
-					include/kernel.h include/proc.h
+kernel/kernel.o : kernel/kernel.c include/kernel.h  include/protectmode.h include/interrupt.h  \
+					include/process.h include/type.h include/print.h include/string.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/proc.o : kernel/proc.c include/protectmode.h include/type.h include/proc.h
+kernel/protectmode.o : kernel/protectmode.c include/protectmode.h include/type.h include/string.h 
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/protectmode.o : kernel/protectmode.c include/protectmode.h include/type.h include/portio.h \
-						include/interrupt.h include/print.h
+kernel/interrupt.o : kernel/interrupt.c include/interrupt.h include/protectmode.h include/process.h  \
+						include/type.h  include/portio.h include/print.h include/string.h include/time.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/procasm.o : kernel/proc.asm
+kernel/process.o : kernel/process.c include/process.h include/protectmode.h include/interrupt.h \
+					include/type.h include/string.h include/print.h include/time.h
+	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+kernel/proesscasm.o : kernel/process.asm include/const.inc
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
-kernel/interrupt.o : kernel/interrupt.asm
+kernel/interruptasm.o : kernel/interrupt.asm include/const.inc
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
 # 一些库：
@@ -71,6 +75,9 @@ lib/portio.o : lib/portio.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
 lib/string.o: lib/string.c include/string.h include/type.h
+	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+lib/time.o : lib/time.c include/time.h include/interrupt.h include/protectmode.h include/type.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
 

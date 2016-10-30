@@ -16,5 +16,4 @@ typedef uint32_t 	u32;
 
 typedef u32 size_t;
 
-
 #endif /* OS_TYPES_H_ */
