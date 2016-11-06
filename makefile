@@ -13,8 +13,8 @@ TRASHDIR 	= /home/fallenworld/trash
 
 BOOT 		= boot/boot.bin boot/loader.bin
 KERNEL 		= kernel/kernel.bin
-OBJS 		= kernel/start.o kernel/kernel.o kernel/protectmode.o  kernel/process.o kernel/proesscasm.o \
-				 kernel/interrupt.o kernel/interruptasm.o lib/string.o lib/portio.o lib/print.o lib/time.o
+OBJS 		= kernel/start.o kernel/kernel.o kernel/protect.o  kernel/task.o kernel/taskcasm.o \
+				 kernel/interrupt.o kernel/interruptasm.o kernel/clock.o lib/string.o lib/portio.o lib/print.o lib/time.o
 
 .PHONY : all build image clean
 
@@ -46,25 +46,30 @@ kernel/kernel.bin : $(OBJS)
 kernel/start.o : kernel/start.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
-kernel/kernel.o : kernel/kernel.c include/kernel.h  include/protectmode.h include/interrupt.h  \
-					include/process.h include/type.h include/print.h include/string.h
+kernel/kernel.o : kernel/kernel.c include/kernel.h  include/protect.h include/interrupt.h  \
+	include/task.h include/type.h include/print.h include/string.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/protectmode.o : kernel/protectmode.c include/protectmode.h include/type.h include/string.h 
+kernel/protect.o : kernel/protect.c include/protect.h include/type.h include/macros.h include/string.h 
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/interrupt.o : kernel/interrupt.c include/interrupt.h include/protectmode.h include/process.h  \
-						include/type.h  include/portio.h include/print.h include/string.h include/time.h
+kernel/interrupt.o : kernel/interrupt.c include/interrupt.h include/type.h  include/macros.h include/protect.h  \
+		include/task.h include/portio.h include/print.h include/string.h include/time.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/process.o : kernel/process.c include/process.h include/protectmode.h include/interrupt.h \
-					include/type.h include/string.h include/print.h include/time.h
+kernel/clock.o: kernel/clock.c  include/clock.h \
+		 include/interrupt.h include/type.h include/task.h include/protect.h \
+		 include/macros.h include/portio.h include/string.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/proesscasm.o : kernel/process.asm include/const.inc
+kernel/task.o: kernel/task.c include/task.h include/type.h include/protect.h include/string.h \
+ 	include/print.h
+	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+kernel/taskcasm.o : kernel/task.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
-kernel/interruptasm.o : kernel/interrupt.asm include/const.inc
+kernel/interruptasm.o : kernel/interrupt.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
 # 一些库：
@@ -77,7 +82,7 @@ lib/portio.o : lib/portio.asm
 lib/string.o: lib/string.c include/string.h include/type.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-lib/time.o : lib/time.c include/time.h include/interrupt.h include/protectmode.h include/type.h
+lib/time.o : lib/time.c include/time.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
 

@@ -8,9 +8,9 @@ Ards_BaseAddrLow 	equ 0 	;基地址低32位(dword)
 Ards_BaseAddrHigh 	equ 4 	;基地址高32位(dword)
 Ards_LengthLow 		equ 8 	;长度低32位(dword)
 Ards_LengthHigh		equ 12 	;长度高32位(dword)
-Ards_Type 			equ 16 	;内存地址类型(dword)
+Ards_Type 		equ 16 	;内存地址类型(dword)
 ;大小:
-ARDS_SIZE 			equ 20 	;Ards结构体大小
+ARDS_SIZE 		equ 20 	;Ards结构体大小
 ;End Struct Ards
 
 START:

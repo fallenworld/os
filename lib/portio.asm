@@ -15,9 +15,9 @@ outByte:
 ;从端口输入一个字节
 ;u8 inByte(u16 port);
 inByte:
-	mov edx, [esp+4]
+        mov edx, [esp+4]
 	xor eax, eax
-	in al, dx
+        in al, dx
 	nop
 	nop
 	nop

@@ -1,4 +1,3 @@
-
 BYTES_PER_ROW 	equ 160
 BYTES_PER_CHAR 	equ 2
 

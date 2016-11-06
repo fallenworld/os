@@ -1,22 +1,18 @@
 #include "time.h"
-#include "interrupt.h"
 
 
-int ticks;
+#define SYS_CALL_GET_TICKS 0
+#define HZ 100
 
 
 int getTicks()
 {
-    return systemCall0(SYSCALL_GET_TICKS);
+    return systemCall0(SYS_CALL_GET_TICKS);
 }
 
-void setupTimeSystemCall()
+void delay(int ms)
 {
-    ticks = 0;
-    addSystemCall(SYSCALL_GET_TICKS, _syscall_getTicks);
-}
-
-int _syscall_getTicks()
-{
-    return ticks;
+    int startTicks = getTicks();
+    while(((getTicks() - startTicks) * 1000 / HZ) < ms)
+    {}
 }
