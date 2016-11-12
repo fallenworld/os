@@ -13,7 +13,7 @@
 #define INT_S_CTL 		0xa0 	//从片控制端口(ICW1的端口)
 #define INT_S_CTLMASK 	0xa1 	//从片中断屏蔽端口(除ICW1以外的端口)
 
-/* 8254 */
+/* 8254定时器 */
 //端口地址
 #define TIMER_MODE  0x43    //计时器控制字端口
 #define TIMER0      0x40    //计时器0端口

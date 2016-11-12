@@ -14,7 +14,9 @@ TRASHDIR 	= /home/fallenworld/trash
 BOOT 		= boot/boot.bin boot/loader.bin
 KERNEL 		= kernel/kernel.bin
 OBJS 		= kernel/start.o kernel/kernel.o kernel/protect.o  kernel/task.o kernel/taskcasm.o \
-				 kernel/interrupt.o kernel/interruptasm.o kernel/clock.o lib/string.o lib/portio.o lib/print.o lib/time.o
+				kernel/interrupt.o kernel/interruptasm.o kernel/clock.o kernel/input.o \
+				kernel/keyboard.o kernel/tty.o  lib/string.o lib/portio.o \
+				lib/print.o lib/time.o
 
 .PHONY : all build image clean
 
@@ -46,15 +48,18 @@ kernel/kernel.bin : $(OBJS)
 kernel/start.o : kernel/start.asm
 	$(ASM) $(ASMKFLAGS) $(SINGLEOUT)
 
-kernel/kernel.o : kernel/kernel.c include/kernel.h  include/protect.h include/interrupt.h  \
-	include/task.h include/type.h include/print.h include/string.h
+kernel/kernel.o : kernel/kernel.c include/kernel.h  \
+		include/protect.h include/interrupt.h  include/task.h include/type.h \
+		include/print.h include/string.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/protect.o : kernel/protect.c include/protect.h include/type.h include/macros.h include/string.h 
+kernel/protect.o : kernel/protect.c include/protect.h \
+		include/type.h include/macros.h include/string.h 
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/interrupt.o : kernel/interrupt.c include/interrupt.h include/type.h  include/macros.h include/protect.h  \
-		include/task.h include/portio.h include/print.h include/string.h include/time.h
+kernel/interrupt.o : kernel/interrupt.c include/interrupt.h \
+		include/type.h  include/macros.h include/protect.h include/task.h \
+		include/portio.h include/print.h include/string.h include/time.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
 kernel/clock.o: kernel/clock.c  include/clock.h \
@@ -62,8 +67,21 @@ kernel/clock.o: kernel/clock.c  include/clock.h \
 		 include/macros.h include/portio.h include/string.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-kernel/task.o: kernel/task.c include/task.h include/type.h include/protect.h include/string.h \
- 	include/print.h
+kernel/task.o: kernel/task.c include/task.h \
+	include/type.h include/protect.h include/string.h include/print.h
+	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+kernel/input.o: kernel/input.c include/input.h \
+ 		include/interrupt.h include/type.h include/macros.h include/portio.h \
+ 		include/string.h
+	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+kernel/keyboard.o: kernel/keyboard.c include/keyboard.h \
+		include/input.h include/interrupt.h include/type.h include/macros.h
+	$(CC) $(CFLAGS) $(SINGLEOUT)
+
+kernel/tty.o: kernel/tty.c include/tty.h \
+		 include/keyboard.h include/input.h include/print.h include/type.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
 kernel/taskcasm.o : kernel/task.asm
@@ -82,7 +100,7 @@ lib/portio.o : lib/portio.asm
 lib/string.o: lib/string.c include/string.h include/type.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
-lib/time.o : lib/time.c include/time.h
+lib/time.o : lib/time.c include/time.h include/syscall.h
 	$(CC) $(CFLAGS) $(SINGLEOUT)
 
 

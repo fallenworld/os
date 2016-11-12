@@ -127,7 +127,7 @@ PRIVATE int interrupt8259AInit()
     outByte(INT_S_CTLMASK, 0x2);
     outByte(INT_M_CTLMASK, 0x1);
     outByte(INT_S_CTLMASK, 0x1);
-    outByte(INT_M_CTLMASK, 0xfe);
+    outByte(INT_M_CTLMASK, 0xfc);
     outByte(INT_S_CTLMASK, 0xff);
     return 1;
 }

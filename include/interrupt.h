@@ -41,10 +41,9 @@ int interruptInit(Interrupt* interrupt, Protect* protect, Gate* idtBuffer, void*
 void interruptAddIrqHandler(Interrupt* interrupt, int irq, void* handler);
 //向系统调用表中添加一条系统调用
 void interruptAddSystemCall(Interrupt* interrupt, int callNum, void* handler);
-//调用系统调用
-u32 systemCall0(u32 callNum);      //0个参数
-u32 systemCall1(u32 callNum, u32 arg1);    //1个参数
-u32 systemCall2(u32 callNum, u32 arg1, u32 arg2);    //2个参数
-u32 systemCall3(u32 callNum, u32 arg1, u32 arg2, u32 arg3);    //3个参数
+//关闭硬件中断
+#define interruptDisableIrq() do {asm("cli");} while(0)
+//开启硬件中断
+#define interruptEnableIrq() do {asm("sti");} while(0)
 
 #endif //OS_INTERRUPT_H_

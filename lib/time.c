@@ -1,7 +1,7 @@
 #include "time.h"
+#include "syscall.h"
 
 
-#define SYS_CALL_GET_TICKS 0
 #define HZ 100
 
 

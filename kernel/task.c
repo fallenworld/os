@@ -66,11 +66,12 @@ void taskManagerRun(TaskManager* taskManager, Task* task)
     taskManager->running = task;
 }
 
+
 void taskManagerSchedule(TaskManager* taskManager)
 {
-    static int i = 0;
+    static int i = 2;
     i++;
-    i %= 3;
+    i %= taskManager->taskTableEnd;
     taskManagerRun(taskManager, taskManager->taskTable + i);
 }
 

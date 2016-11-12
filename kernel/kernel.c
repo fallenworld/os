@@ -3,6 +3,11 @@
 #include "interrupt.h"
 #include "task.h"
 #include "clock.h"
+#include "input.h"
+#include "keyboard.h"
+
+#include "tty.h"
+
 #include "print.h"
 #include "string.h"
 #include "time.h"
@@ -16,6 +21,7 @@
 #define TASK_TABLE_LEN      16
 #define TASK_STACK_SIZE     0x1000
 #define TASK_STACK_BUF_SIZE (TASK_TABLE_LEN * TASK_STACK_SIZE)
+#define EVENT_QUEUE_CNT     4
 
 
 /* 全局变量 */
@@ -34,6 +40,10 @@ Task taskTable[TASK_TABLE_LEN];
 u8 taskStackBuffer[TASK_STACK_BUF_SIZE];
 //时钟模块
 Clock clock;
+//输入模块
+Input input;
+EventQueue* eventQueueTable[EVENT_QUEUE_CNT];
+Keyboard keyboard;
 
 
 void processA()
@@ -85,13 +95,15 @@ void main()
     //初始化时钟模块
     clockInit(&clock, &interrupt, &taskManager);
     printStr("Clock moudle initialized\n");
-    taskManagerNew(&taskManager, processA, 0, "processA");
-    taskManagerNew(&taskManager, processB, 1, "processB");
-    taskManagerNew(&taskManager, processC, 2, "processC");
-    //asm("ud2");
-    //asm("sti");
-    void (*irqAddr)() = 0x316fd;
-    irqAddr();
+    //初始化输入模块
+    inputInit(&input, eventQueueTable, EVENT_QUEUE_CNT);
+    keyboardInit(&keyboard, &input, &interrupt);
+
+    //taskManagerNew(&taskManager, processA, 0, "processA");
+    //taskManagerNew(&taskManager, processB, 1, "processB");
+    //taskManagerNew(&taskManager, processC, 2, "processC");
+    taskManagerNew(&taskManager, ttyEntry, 0, "tty0");
+    interruptEnableIrq();
     while(1) {}
 }
 

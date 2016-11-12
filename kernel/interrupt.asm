@@ -188,7 +188,9 @@ END_COMPARE_NESTING_LEVELS_irq%1:
     ;中断嵌套层数+1
     inc dword [ebx + InterruptNestingLevels]
     sti
-    call [ebx + InterruptIrqHandlerTable + %1 * 4]
+    mov eax, [ebx + InterruptIrqHandlerTable]
+    add eax, %1 * 4
+    call [eax]
     cli
     dec dword [ebx + InterruptNestingLevels]
     ;允许当前中断
@@ -201,7 +203,7 @@ END_COMPARE_NESTING_LEVELS_irq%1:
 %macro irqSlave 1
     ;保存进程状态
     call saveProcessState
-    ;段寄存器、栈换到内核态
+    ;段寄存器换到内核态
     mov ax, ss
     mov ds, ax
     mov es, ax
@@ -222,11 +224,13 @@ END_COMPARE_NESTING_LEVELS_irq%1:
     out INT_S_CTLMASK, al
     ;输出EOI
     mov al, EOI
-    out INT_M_CTL, al
+    out INT_S_CTL, al
     ;中断嵌套层数+1
     inc dword [ebx + InterruptNestingLevels]
     sti
-    call [ebx + InterruptIrqHandlerTable + %1 * 4]
+    mov eax, [ebx + InterruptIrqHandlerTable]
+    add eax, %1 * 4
+    call [eax]
     cli
     dec dword [ebx + InterruptNestingLevels]
     ;允许当前中断
@@ -236,46 +240,11 @@ END_COMPARE_NESTING_LEVELS_irq%1:
     ret
 %endmacro
 
+extern printChar
 ;硬件中断服务程序
 ;IRQ0:时钟中断，用于进程调度
-irq00:
-    ;irqMaster 0
-    ;保存进程状态
-    call saveProcessState
-    ;段寄存器换到内核态
-    mov ax, ss
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    ;判断中断嵌套层数
-    mov ebx, [interruptInstance]
-    cmp dword [ebx + InterruptNestingLevels], 0
-    jne NOT_NESTING_LEVEL_0_irq0
-    mov esp, kernelStack        ;未发生中断重入(说明此时是从ring3->ring0)则切换堆栈，并最后恢复进程执行
-    push restartProcess
-    jmp END_COMPARE_NESTING_LEVELS_irq0
-NOT_NESTING_LEVEL_0_irq0:
-    push returnParentInterrupt  ;发生了中断重入(说明此时是从ring0->ring0)则不切换堆栈，并最后回到父中断
-END_COMPARE_NESTING_LEVELS_irq0:
-    ;不允许再发生当前中断
-    in al, INT_M_CTLMASK
-    or al, (1 << 0)
-    out INT_M_CTLMASK, al
-    ;输出EOI
-    mov al, EOI
-    out INT_M_CTL, al
-    ;中断嵌套层数+1
-    inc dword [ebx + InterruptNestingLevels]
-    sti
-    mov eax, [ebx + InterruptIrqHandlerTable + 0 * 4]
-    call [eax]
-    cli
-    dec dword [ebx + InterruptNestingLevels]
-    ;允许当前中断
-    in al, INT_M_CTLMASK
-    and al, ~(1 << 0)
-    out INT_M_CTLMASK, al
-    ret
+irq00:    ;保存进程状态
+    irqMaster 0
 irq01:
     irqMaster 1
 irq02:
